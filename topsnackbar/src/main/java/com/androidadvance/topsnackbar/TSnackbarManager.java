@@ -27,20 +27,20 @@ import java.lang.ref.WeakReference;
 /**
  * Manages {@link TSnackbar}s.
  */
-class SnackbarManager {
+public class TSnackbarManager {
 
     private static final int MSG_TIMEOUT = 0;
 
     private static final int SHORT_DURATION_MS = 1500;
     private static final int LONG_DURATION_MS = 2750;
 
-    private static SnackbarManager sSnackbarManager;
+    private static TSnackbarManager sTSnackbarManager;
 
-    static SnackbarManager getInstance() {
-        if (sSnackbarManager == null) {
-            sSnackbarManager = new SnackbarManager();
+    static TSnackbarManager getInstance() {
+        if (sTSnackbarManager == null) {
+            sTSnackbarManager = new TSnackbarManager();
         }
-        return sSnackbarManager;
+        return sTSnackbarManager;
     }
 
     private final Object mLock;
@@ -49,7 +49,7 @@ class SnackbarManager {
     private SnackbarRecord mCurrentSnackbar;
     private SnackbarRecord mNextSnackbar;
 
-    private SnackbarManager() {
+    private TSnackbarManager() {
         mLock = new Object();
         mHandler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
             @Override
