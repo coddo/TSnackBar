@@ -20,7 +20,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.androidadvance.topsnackbar.interfaces.ICallback;
+import com.androidadvance.topsnackbar.interfaces.ITSnackbarManagerCallback;
 
 import java.lang.ref.WeakReference;
 
@@ -36,7 +36,7 @@ public class TSnackbarManager {
 
     private static TSnackbarManager sTSnackbarManager;
 
-    static TSnackbarManager getInstance() {
+    public static TSnackbarManager getInstance() {
         if (sTSnackbarManager == null) {
             sTSnackbarManager = new TSnackbarManager();
         }
@@ -64,22 +64,22 @@ public class TSnackbarManager {
         });
     }
 
-    public void show(int duration, ICallback ICallback) {
+    public void show(int duration, ITSnackbarManagerCallback ITSnackbarManagerCallback) {
         synchronized (mLock) {
-            if (isCurrentSnackbar(ICallback)) {
-                // Means that the ICallback is already in the queue. We'll just update the duration
+            if (isCurrentSnackbar(ITSnackbarManagerCallback)) {
+                // Means that the ITSnackbarManagerCallback is already in the queue. We'll just update the duration
                 mCurrentSnackbar.duration = duration;
                 // If this is the TSnackbar currently being shown, call re-schedule it's
                 // timeout
                 mHandler.removeCallbacksAndMessages(mCurrentSnackbar);
                 scheduleTimeoutLocked(mCurrentSnackbar);
                 return;
-            } else if (isNextSnackbar(ICallback)) {
+            } else if (isNextSnackbar(ITSnackbarManagerCallback)) {
                 // We'll just update the duration
                 mNextSnackbar.duration = duration;
             } else {
                 // Else, we need to create a new record and queue it
-                mNextSnackbar = new SnackbarRecord(duration, ICallback);
+                mNextSnackbar = new SnackbarRecord(duration, ITSnackbarManagerCallback);
             }
 
             if (mCurrentSnackbar != null && cancelSnackbarLocked(mCurrentSnackbar,
@@ -95,11 +95,11 @@ public class TSnackbarManager {
         }
     }
 
-    public void dismiss(ICallback ICallback, int event) {
+    public void dismiss(ITSnackbarManagerCallback ITSnackbarManagerCallback, int event) {
         synchronized (mLock) {
-            if (isCurrentSnackbar(ICallback)) {
+            if (isCurrentSnackbar(ITSnackbarManagerCallback)) {
                 cancelSnackbarLocked(mCurrentSnackbar, event);
-            } else if (isNextSnackbar(ICallback)) {
+            } else if (isNextSnackbar(ITSnackbarManagerCallback)) {
                 cancelSnackbarLocked(mNextSnackbar, event);
             }
         }
@@ -109,10 +109,10 @@ public class TSnackbarManager {
      * Should be called when a TSnackbar is no longer displayed. This is after any exit
      * animation has finished.
      */
-    public void onDismissed(ICallback ICallback) {
+    public void onDismissed(ITSnackbarManagerCallback ITSnackbarManagerCallback) {
         synchronized (mLock) {
-            if (isCurrentSnackbar(ICallback)) {
-                // If the ICallback is from a TSnackbar currently show, remove it and show a new one
+            if (isCurrentSnackbar(ITSnackbarManagerCallback)) {
+                // If the ITSnackbarManagerCallback is from a TSnackbar currently show, remove it and show a new one
                 mCurrentSnackbar = null;
                 if (mNextSnackbar != null) {
                     showNextSnackbarLocked();
@@ -125,39 +125,39 @@ public class TSnackbarManager {
      * Should be called when a TSnackbar is being shown. This is after any entrance animation has
      * finished.
      */
-    public void onShown(ICallback ICallback) {
+    public void onShown(ITSnackbarManagerCallback ITSnackbarManagerCallback) {
         synchronized (mLock) {
-            if (isCurrentSnackbar(ICallback)) {
+            if (isCurrentSnackbar(ITSnackbarManagerCallback)) {
                 scheduleTimeoutLocked(mCurrentSnackbar);
             }
         }
     }
 
-    public void cancelTimeout(ICallback ICallback) {
+    public void cancelTimeout(ITSnackbarManagerCallback ITSnackbarManagerCallback) {
         synchronized (mLock) {
-            if (isCurrentSnackbar(ICallback)) {
+            if (isCurrentSnackbar(ITSnackbarManagerCallback)) {
                 mHandler.removeCallbacksAndMessages(mCurrentSnackbar);
             }
         }
     }
 
-    public void restoreTimeout(ICallback ICallback) {
+    public void restoreTimeout(ITSnackbarManagerCallback ITSnackbarManagerCallback) {
         synchronized (mLock) {
-            if (isCurrentSnackbar(ICallback)) {
+            if (isCurrentSnackbar(ITSnackbarManagerCallback)) {
                 scheduleTimeoutLocked(mCurrentSnackbar);
             }
         }
     }
 
-    public boolean isCurrent(ICallback ICallback) {
+    public boolean isCurrent(ITSnackbarManagerCallback ITSnackbarManagerCallback) {
         synchronized (mLock) {
-            return isCurrentSnackbar(ICallback);
+            return isCurrentSnackbar(ITSnackbarManagerCallback);
         }
     }
 
-    public boolean isCurrentOrNext(ICallback ICallback) {
+    public boolean isCurrentOrNext(ITSnackbarManagerCallback ITSnackbarManagerCallback) {
         synchronized (mLock) {
-            return isCurrentSnackbar(ICallback) || isNextSnackbar(ICallback);
+            return isCurrentSnackbar(ITSnackbarManagerCallback) || isNextSnackbar(ITSnackbarManagerCallback);
         }
     }
 
@@ -166,31 +166,31 @@ public class TSnackbarManager {
             mCurrentSnackbar = mNextSnackbar;
             mNextSnackbar = null;
 
-            final ICallback ICallback = mCurrentSnackbar.ICallback.get();
-            if (ICallback != null) {
-                ICallback.show();
+            final ITSnackbarManagerCallback ITSnackbarManagerCallback = mCurrentSnackbar.ICallback.get();
+            if (ITSnackbarManagerCallback != null) {
+                ITSnackbarManagerCallback.show();
             } else {
-                // The ICallback doesn't exist any more, clear out the TSnackbar
+                // The ITSnackbarManagerCallback doesn't exist any more, clear out the TSnackbar
                 mCurrentSnackbar = null;
             }
         }
     }
 
     private boolean cancelSnackbarLocked(SnackbarRecord record, int event) {
-        final ICallback ICallback = record.ICallback.get();
-        if (ICallback != null) {
-            ICallback.dismiss(event);
+        final ITSnackbarManagerCallback ITSnackbarManagerCallback = record.ICallback.get();
+        if (ITSnackbarManagerCallback != null) {
+            ITSnackbarManagerCallback.dismiss(event);
             return true;
         }
         return false;
     }
 
-    private boolean isCurrentSnackbar(ICallback ICallback) {
-        return mCurrentSnackbar != null && mCurrentSnackbar.isSnackbar(ICallback);
+    private boolean isCurrentSnackbar(ITSnackbarManagerCallback ITSnackbarManagerCallback) {
+        return mCurrentSnackbar != null && mCurrentSnackbar.isSnackbar(ITSnackbarManagerCallback);
     }
 
-    private boolean isNextSnackbar(ICallback ICallback) {
-        return mNextSnackbar != null && mNextSnackbar.isSnackbar(ICallback);
+    private boolean isNextSnackbar(ITSnackbarManagerCallback ITSnackbarManagerCallback) {
+        return mNextSnackbar != null && mNextSnackbar.isSnackbar(ITSnackbarManagerCallback);
     }
 
     private void scheduleTimeoutLocked(SnackbarRecord r) {
@@ -218,16 +218,16 @@ public class TSnackbarManager {
     }
 
     private static class SnackbarRecord {
-        private final WeakReference<ICallback> ICallback;
+        private final WeakReference<ITSnackbarManagerCallback> ICallback;
         private int duration;
 
-        SnackbarRecord(int duration, ICallback ICallback) {
-            this.ICallback = new WeakReference<>(ICallback);
+        SnackbarRecord(int duration, ITSnackbarManagerCallback ITSnackbarManagerCallback) {
+            this.ICallback = new WeakReference<>(ITSnackbarManagerCallback);
             this.duration = duration;
         }
 
-        boolean isSnackbar(ICallback ICallback) {
-            return ICallback != null && this.ICallback.get() == ICallback;
+        boolean isSnackbar(ITSnackbarManagerCallback ITSnackbarManagerCallback) {
+            return ITSnackbarManagerCallback != null && this.ICallback.get() == ITSnackbarManagerCallback;
         }
     }
 }

@@ -102,7 +102,7 @@ public class TSnackbarLayout extends LinearLayout {
         }
     }
 
-    void animateChildrenIn(int delay, int duration) {
+    public void animateChildrenIn(int delay, int duration) {
         ViewCompat.setAlpha(mMessageView, 0f);
         ViewCompat.animate(mMessageView)
                 .alpha(1f)
@@ -162,11 +162,11 @@ public class TSnackbarLayout extends LinearLayout {
         }
     }
 
-    void setOnLayoutChangeListener(IOnLayoutChangeListener IOnLayoutChangeListener) {
+    public void setOnLayoutChangeListener(IOnLayoutChangeListener IOnLayoutChangeListener) {
         mIOnLayoutChangeListener = IOnLayoutChangeListener;
     }
 
-    void setOnAttachStateChangeListener(IOnAttachStateChangeListener listener) {
+    public void setOnAttachStateChangeListener(IOnAttachStateChangeListener listener) {
         mIOnAttachStateChangeListener = listener;
     }
 
