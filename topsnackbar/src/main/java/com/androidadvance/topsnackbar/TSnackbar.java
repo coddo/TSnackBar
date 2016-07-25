@@ -23,6 +23,7 @@ import android.support.design.widget.SwipeDismissBehavior;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorListenerAdapter;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -31,6 +32,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -67,6 +69,8 @@ public final class TSnackbar {
 
     public static final int MSG_SHOW = 0;
     public static final int MSG_DISMISS = 1;
+
+    public static final Interpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new FastOutSlowInInterpolator();
 
     private final ViewGroup mParent;
     private final Context mContext;
@@ -361,14 +365,14 @@ public final class TSnackbar {
             ViewCompat.setTranslationY(Layout, -Layout.getHeight());
             ViewCompat.animate(Layout)
                     .translationY(0f)
-                    .setInterpolator(com.androidadvance.topsnackbar.AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR)
+                    .setInterpolator(FAST_OUT_SLOW_IN_INTERPOLATOR)
                     .setDuration(ANIMATION_DURATION)
                     .setListener(mFadeInViewPropertyAnimatorListenerAdapter)
                     .start();
         } else {
             Animation anim = AnimationUtils.loadAnimation(Layout.getContext(),
                     R.anim.top_in);
-            anim.setInterpolator(com.androidadvance.topsnackbar.AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR);
+            anim.setInterpolator(FAST_OUT_SLOW_IN_INTERPOLATOR);
             anim.setDuration(ANIMATION_DURATION);
             anim.setAnimationListener(mOnShowAnimationListener);
             Layout.startAnimation(anim);
@@ -379,13 +383,13 @@ public final class TSnackbar {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             ViewCompat.animate(Layout)
                     .translationY(-Layout.getHeight())
-                    .setInterpolator(com.androidadvance.topsnackbar.AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR)
+                    .setInterpolator(FAST_OUT_SLOW_IN_INTERPOLATOR)
                     .setDuration(ANIMATION_DURATION)
                     .setListener(new TSnackbarViewOutPropertyAnimatorListenerAdapter(this, event))
                     .start();
         } else {
             Animation anim = AnimationUtils.loadAnimation(Layout.getContext(), R.anim.top_out);
-            anim.setInterpolator(com.androidadvance.topsnackbar.AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR);
+            anim.setInterpolator(FAST_OUT_SLOW_IN_INTERPOLATOR);
             anim.setDuration(ANIMATION_DURATION);
             anim.setAnimationListener(new TSnackbarCloseAnimationListener(this, event));
             Layout.startAnimation(anim);
