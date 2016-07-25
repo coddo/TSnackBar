@@ -10,9 +10,9 @@ import com.androidadvance.topsnackbar.TSnackbarManager;
 /**
  * Created by Claudiu Codoban on 7/25/2016.
  */
-public class TSnackbarOnDismissTSnackbarListener extends BaseTSnackbarListener implements SwipeDismissBehavior.OnDismissListener {
+public class TSnackbarDismissTSnackbarListener extends BaseTSnackbarListener implements SwipeDismissBehavior.OnDismissListener {
 
-    public TSnackbarOnDismissTSnackbarListener(TSnackbar tSnackbar) {
+    public TSnackbarDismissTSnackbarListener(TSnackbar tSnackbar) {
         super(tSnackbar);
     }
 

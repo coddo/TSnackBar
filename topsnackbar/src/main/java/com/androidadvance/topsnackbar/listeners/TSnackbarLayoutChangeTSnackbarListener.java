@@ -8,8 +8,8 @@ import com.androidadvance.topsnackbar.interfaces.IOnLayoutChangeListener;
 /**
  * Created by Claudiu Codoban on 7/25/2016.
  */
-public class TSnackbarOnLayoutChangeTSnackbarListener extends BaseTSnackbarListener implements IOnLayoutChangeListener {
-    public TSnackbarOnLayoutChangeTSnackbarListener(TSnackbar tSnackbar) {
+public class TSnackbarLayoutChangeTSnackbarListener extends BaseTSnackbarListener implements IOnLayoutChangeListener {
+    public TSnackbarLayoutChangeTSnackbarListener(TSnackbar tSnackbar) {
         super(tSnackbar);
     }
 

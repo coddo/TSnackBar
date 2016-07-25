@@ -44,9 +44,9 @@ import com.androidadvance.topsnackbar.interfaces.IOnAttachStateChangeListener;
 import com.androidadvance.topsnackbar.interfaces.IOnLayoutChangeListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarCloseAnimationListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarShowAnimationListener;
-import com.androidadvance.topsnackbar.listeners.TSnackbarOnAttachStateChangeTSnackbarListener;
-import com.androidadvance.topsnackbar.listeners.TSnackbarOnDismissTSnackbarListener;
-import com.androidadvance.topsnackbar.listeners.TSnackbarOnLayoutChangeTSnackbarListener;
+import com.androidadvance.topsnackbar.listeners.TSnackbarAttachStateChangeTSnackbarListener;
+import com.androidadvance.topsnackbar.listeners.TSnackbarDismissTSnackbarListener;
+import com.androidadvance.topsnackbar.listeners.TSnackbarLayoutChangeTSnackbarListener;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -70,7 +70,7 @@ public final class TSnackbar {
     public static final int MSG_SHOW = 0;
     public static final int MSG_DISMISS = 1;
 
-    public static final Interpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new FastOutSlowInInterpolator();
+    private static final Interpolator FAST_OUT_SLOW_IN_INTERPOLATOR = new FastOutSlowInInterpolator();
 
     private final ViewGroup mParent;
     private final Context mContext;
@@ -81,10 +81,10 @@ public final class TSnackbar {
     public TSnackbarCallback TSnackbarCallback;
     public final ITSnackbarManagerCallback ManagerCallback = new TSnackbarManagerCallback(this);
 
-    private final SwipeDismissBehavior.OnDismissListener mOnDismissListener = new TSnackbarOnDismissTSnackbarListener(this);
-    private final IOnAttachStateChangeListener mOnAttachStateChangeListener = new TSnackbarOnAttachStateChangeTSnackbarListener(this);
-    private final IOnLayoutChangeListener mOnLayoutChangeListener = new TSnackbarOnLayoutChangeTSnackbarListener(this);
-    private final Animation.AnimationListener mOnShowAnimationListener = new TSnackbarShowAnimationListener(this);
+    private final SwipeDismissBehavior.OnDismissListener mDismissListener = new TSnackbarDismissTSnackbarListener(this);
+    private final IOnAttachStateChangeListener mAttachStateChangeListener = new TSnackbarAttachStateChangeTSnackbarListener(this);
+    private final IOnLayoutChangeListener mLayoutChangeListener = new TSnackbarLayoutChangeTSnackbarListener(this);
+    private final Animation.AnimationListener mShowAnimationListener = new TSnackbarShowAnimationListener(this);
     private final ViewPropertyAnimatorListenerAdapter mFadeInViewPropertyAnimatorListenerAdapter = new TSnackbarViewInPropertyAnimatorListenerAdapter(this);
 
     static {
@@ -340,7 +340,7 @@ public final class TSnackbar {
                 TSnackbarBehavior.setStartAlphaSwipeDistance(0.1f);
                 TSnackbarBehavior.setEndAlphaSwipeDistance(0.6f);
                 TSnackbarBehavior.setSwipeDirection(SwipeDismissBehavior.SWIPE_DIRECTION_START_TO_END);
-                TSnackbarBehavior.setListener(mOnDismissListener);
+                TSnackbarBehavior.setListener(mDismissListener);
 
                 CoordinatorLayout.LayoutParams layoutParameters = (CoordinatorLayout.LayoutParams) lp;
                 layoutParameters.setBehavior(TSnackbarBehavior);
@@ -349,14 +349,14 @@ public final class TSnackbar {
             mParent.addView(Layout);
         }
 
-        Layout.setOnAttachStateChangeListener(mOnAttachStateChangeListener);
+        Layout.setOnAttachStateChangeListener(mAttachStateChangeListener);
 
         if (ViewCompat.isLaidOut(Layout)) {
 
             animateViewIn();
         } else {
 
-            Layout.setOnLayoutChangeListener(mOnLayoutChangeListener);
+            Layout.setOnLayoutChangeListener(mLayoutChangeListener);
         }
     }
 
@@ -374,7 +374,7 @@ public final class TSnackbar {
                     R.anim.top_in);
             anim.setInterpolator(FAST_OUT_SLOW_IN_INTERPOLATOR);
             anim.setDuration(ANIMATION_DURATION);
-            anim.setAnimationListener(mOnShowAnimationListener);
+            anim.setAnimationListener(mShowAnimationListener);
             Layout.startAnimation(anim);
         }
     }
