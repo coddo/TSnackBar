@@ -15,7 +15,7 @@
   ~ limitations under the License.
 -->
 <view xmlns:android="http://schemas.android.com/apk/res/android"
-    class="com.androidadvance.topsnackbar.TSnackbar$SnackbarLayout"
+    class="com.androidadvance.topsnackbar.TSnackbarLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="top"

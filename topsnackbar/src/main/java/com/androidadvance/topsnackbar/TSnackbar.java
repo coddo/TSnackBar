@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
@@ -20,13 +19,11 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.SwipeDismissBehavior;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorListenerAdapter;
 import android.text.TextUtils;
-import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -35,51 +32,18 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.androidadvance.topsnackbar.interfaces.ICallback;
+import com.androidadvance.topsnackbar.interfaces.IOnAttachStateChangeListener;
+import com.androidadvance.topsnackbar.interfaces.IOnLayoutChangeListener;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 
 public final class TSnackbar {
-
-
-    public static abstract class Callback {
-
-        public static final int DISMISS_EVENT_SWIPE = 0;
-
-        public static final int DISMISS_EVENT_ACTION = 1;
-        
-        public static final int DISMISS_EVENT_TIMEOUT = 2;
-        
-        public static final int DISMISS_EVENT_MANUAL = 3;
-        
-        public static final int DISMISS_EVENT_CONSECUTIVE = 4;
-
-        
-        @IntDef({
-                DISMISS_EVENT_SWIPE, DISMISS_EVENT_ACTION, DISMISS_EVENT_TIMEOUT,
-                DISMISS_EVENT_MANUAL, DISMISS_EVENT_CONSECUTIVE
-        })
-        @Retention(RetentionPolicy.SOURCE)
-        public @interface DismissEvent {
-        }
-
-        
-        public void onDismissed(TSnackbar snackbar, @DismissEvent int event) {
-            
-        }
-
-        
-        public void onShown(TSnackbar snackbar) {
-            
-        }
-    }
-
-    
     @IntDef({LENGTH_INDEFINITE, LENGTH_SHORT, LENGTH_LONG})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Duration {
@@ -120,18 +84,17 @@ public final class TSnackbar {
 
     private final ViewGroup mParent;
     private final Context mContext;
-    private final SnackbarLayout mView;
+    private final TSnackbarLayout mView;
     private int mDuration;
-    private Callback mCallback;
+    private TSnackbarCallback mTSnackbarCallback;
 
     private TSnackbar(ViewGroup parent) {
         mParent = parent;
         mContext = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(mContext);
-        mView = (SnackbarLayout) inflater.inflate(R.layout.tsnackbar_layout, mParent, false);
+        mView = (TSnackbarLayout) inflater.inflate(R.layout.tsnackbar_layout, mParent, false);
     }
 
-    
     @NonNull
     public static TSnackbar make(@NonNull View view, @NonNull CharSequence text,
                                  @Duration int duration) {
@@ -141,7 +104,6 @@ public final class TSnackbar {
         return snackbar;
     }
 
-    
     @NonNull
     public static TSnackbar make(@NonNull View view, @StringRes int resId, @Duration int duration) {
         return make(view, view.getResources()
@@ -234,8 +196,6 @@ public final class TSnackbar {
         return drawable;
     }
 
-
-    
     private static float convertDpToPixel(float dp, Context context) {
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
@@ -243,8 +203,6 @@ public final class TSnackbar {
         return px;
     }
 
-
-    
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static Bitmap getBitmap(VectorDrawable vectorDrawable) {
         Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
@@ -254,7 +212,6 @@ public final class TSnackbar {
         vectorDrawable.draw(canvas);
         return bitmap;
     }
-
 
     private static Bitmap getBitmap(Drawable drawable) {
         if (drawable instanceof BitmapDrawable) {
@@ -266,14 +223,11 @@ public final class TSnackbar {
         }
     }
 
-
-    
     @NonNull
     public TSnackbar setAction(@StringRes int resId, View.OnClickListener listener) {
         return setAction(mContext.getText(resId), listener);
     }
 
-    
     @NonNull
     public TSnackbar setAction(CharSequence text, final View.OnClickListener listener) {
         final TextView tv = mView.getActionView();
@@ -289,14 +243,13 @@ public final class TSnackbar {
                 public void onClick(View view) {
                     listener.onClick(view);
                     
-                    dispatchDismiss(Callback.DISMISS_EVENT_ACTION);
+                    dispatchDismiss(TSnackbarCallback.DISMISS_EVENT_ACTION);
                 }
             });
         }
         return this;
     }
 
-    
     @NonNull
     public TSnackbar setActionTextColor(ColorStateList colors) {
         final TextView tv = mView.getActionView();
@@ -304,7 +257,6 @@ public final class TSnackbar {
         return this;
     }
 
-    
     @NonNull
     public TSnackbar setActionTextColor(@ColorInt int color) {
         final TextView tv = mView.getActionView();
@@ -333,54 +285,47 @@ public final class TSnackbar {
         return this;
     }
 
-    
     @Duration
     public int getDuration() {
         return mDuration;
     }
 
-    
     @NonNull
     public View getView() {
         return mView;
     }
 
-    
     public void show() {
         SnackbarManager.getInstance()
                 .show(mDuration, mManagerCallback);
     }
 
-    
     public void dismiss() {
-        dispatchDismiss(Callback.DISMISS_EVENT_MANUAL);
+        dispatchDismiss(TSnackbarCallback.DISMISS_EVENT_MANUAL);
     }
 
-    private void dispatchDismiss(@Callback.DismissEvent int event) {
+    private void dispatchDismiss(@TSnackbarCallback.DismissEvent int event) {
         SnackbarManager.getInstance()
                 .dismiss(mManagerCallback, event);
     }
 
-    
     @NonNull
-    public TSnackbar setCallback(Callback callback) {
-        mCallback = callback;
+    public TSnackbar setCallback(TSnackbarCallback TSnackbarCallback) {
+        mTSnackbarCallback = TSnackbarCallback;
         return this;
     }
 
-    
     public boolean isShown() {
         return SnackbarManager.getInstance()
                 .isCurrent(mManagerCallback);
     }
 
-    
     public boolean isShownOrQueued() {
         return SnackbarManager.getInstance()
                 .isCurrentOrNext(mManagerCallback);
     }
 
-    private final SnackbarManager.Callback mManagerCallback = new SnackbarManager.Callback() {
+    private final ICallback mManagerCallback = new ICallback() {
         @Override
         public void show() {
             sHandler.sendMessage(sHandler.obtainMessage(MSG_SHOW, TSnackbar.this));
@@ -406,7 +351,7 @@ public final class TSnackbar {
                 behavior.setListener(new SwipeDismissBehavior.OnDismissListener() {
                     @Override
                     public void onDismiss(View view) {
-                        dispatchDismiss(Callback.DISMISS_EVENT_SWIPE);
+                        dispatchDismiss(TSnackbarCallback.DISMISS_EVENT_SWIPE);
                     }
 
                     @Override
@@ -431,7 +376,7 @@ public final class TSnackbar {
             mParent.addView(mView);
         }
 
-        mView.setOnAttachStateChangeListener(new SnackbarLayout.OnAttachStateChangeListener() {
+        mView.setOnAttachStateChangeListener(new IOnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {
             }
@@ -446,7 +391,7 @@ public final class TSnackbar {
                     sHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            onViewHidden(Callback.DISMISS_EVENT_MANUAL);
+                            onViewHidden(TSnackbarCallback.DISMISS_EVENT_MANUAL);
                         }
                     });
                 }
@@ -458,7 +403,7 @@ public final class TSnackbar {
             animateViewIn();
         } else {
             
-            mView.setOnLayoutChangeListener(new SnackbarLayout.OnLayoutChangeListener() {
+            mView.setOnLayoutChangeListener(new IOnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View view, int left, int top, int right, int bottom) {
                     animateViewIn();
@@ -484,8 +429,8 @@ public final class TSnackbar {
 
                         @Override
                         public void onAnimationEnd(View view) {
-                            if (mCallback != null) {
-                                mCallback.onShown(TSnackbar.this);
+                            if (mTSnackbarCallback != null) {
+                                mTSnackbarCallback.onShown(TSnackbar.this);
                             }
                             SnackbarManager.getInstance()
                                     .onShown(mManagerCallback);
@@ -500,8 +445,8 @@ public final class TSnackbar {
             anim.setAnimationListener(new Animation.AnimationListener() {
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    if (mCallback != null) {
-                        mCallback.onShown(TSnackbar.this);
+                    if (mTSnackbarCallback != null) {
+                        mTSnackbarCallback.onShown(TSnackbar.this);
                     }
                     SnackbarManager.getInstance()
                             .onShown(mManagerCallback);
@@ -572,8 +517,8 @@ public final class TSnackbar {
         SnackbarManager.getInstance()
                 .onDismissed(mManagerCallback);
         
-        if (mCallback != null) {
-            mCallback.onDismissed(this, event);
+        if (mTSnackbarCallback != null) {
+            mTSnackbarCallback.onDismissed(this, event);
         }
         
         final ViewParent parent = mView.getParent();
@@ -598,211 +543,17 @@ public final class TSnackbar {
         return false;
     }
 
-    
-    public static class SnackbarLayout extends LinearLayout {
-        private TextView mMessageView;
-        private Button mActionView;
-
-        private int mMaxWidth;
-        private int mMaxInlineActionWidth;
-
-        interface OnLayoutChangeListener {
-            void onLayoutChange(View view, int left, int top, int right, int bottom);
-        }
-
-        interface OnAttachStateChangeListener {
-            void onViewAttachedToWindow(View v);
-
-            void onViewDetachedFromWindow(View v);
-        }
-
-        private OnLayoutChangeListener mOnLayoutChangeListener;
-        private OnAttachStateChangeListener mOnAttachStateChangeListener;
-
-        public SnackbarLayout(Context context) {
-            this(context, null);
-        }
-
-        public SnackbarLayout(Context context, AttributeSet attrs) {
-            super(context, attrs);
-            TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SnackbarLayout);
-            mMaxWidth = a.getDimensionPixelSize(R.styleable.SnackbarLayout_android_maxWidth, -1);
-            mMaxInlineActionWidth = a.getDimensionPixelSize(
-                    R.styleable.SnackbarLayout_maxActionInlineWidth, -1);
-            if (a.hasValue(R.styleable.SnackbarLayout_elevation)) {
-                ViewCompat.setElevation(this, a.getDimensionPixelSize(
-                        R.styleable.SnackbarLayout_elevation, 0));
-            }
-            a.recycle();
-
-            setClickable(true);
-
-            
-            
-            
-            LayoutInflater.from(context)
-                    .inflate(R.layout.tsnackbar_layout_include, this);
-
-            ViewCompat.setAccessibilityLiveRegion(this,
-                    ViewCompat.ACCESSIBILITY_LIVE_REGION_POLITE);
-        }
-
-        @Override
-        protected void onFinishInflate() {
-            super.onFinishInflate();
-            mMessageView = (TextView) findViewById(R.id.snackbar_text);
-            mActionView = (Button) findViewById(R.id.snackbar_action);
-        }
-
-        TextView getMessageView() {
-            return mMessageView;
-        }
-
-        Button getActionView() {
-            return mActionView;
-        }
-
-        @Override
-        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-            if (mMaxWidth > 0 && getMeasuredWidth() > mMaxWidth) {
-                widthMeasureSpec = MeasureSpec.makeMeasureSpec(mMaxWidth, MeasureSpec.EXACTLY);
-                super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-            }
-
-            final int multiLineVPadding = getResources().getDimensionPixelSize(
-                    R.dimen.design_snackbar_padding_vertical_2lines);
-            final int singleLineVPadding = getResources().getDimensionPixelSize(
-                    R.dimen.design_snackbar_padding_vertical);
-            final boolean isMultiLine = mMessageView.getLayout()
-                    .getLineCount() > 1;
-
-            boolean remeasure = false;
-            if (isMultiLine && mMaxInlineActionWidth > 0
-                    && mActionView.getMeasuredWidth() > mMaxInlineActionWidth) {
-                if (updateViewsWithinLayout(VERTICAL, multiLineVPadding,
-                        multiLineVPadding - singleLineVPadding)) {
-                    remeasure = true;
-                }
-            } else {
-                final int messagePadding = isMultiLine ? multiLineVPadding : singleLineVPadding;
-                if (updateViewsWithinLayout(HORIZONTAL, messagePadding, messagePadding)) {
-                    remeasure = true;
-                }
-            }
-
-            if (remeasure) {
-                super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-            }
-        }
-
-        void animateChildrenIn(int delay, int duration) {
-            ViewCompat.setAlpha(mMessageView, 0f);
-            ViewCompat.animate(mMessageView)
-                    .alpha(1f)
-                    .setDuration(duration)
-                    .setStartDelay(delay)
-                    .start();
-
-            if (mActionView.getVisibility() == VISIBLE) {
-                ViewCompat.setAlpha(mActionView, 0f);
-                ViewCompat.animate(mActionView)
-                        .alpha(1f)
-                        .setDuration(duration)
-                        .setStartDelay(delay)
-                        .start();
-            }
-        }
-
-        void animateChildrenOut(int delay, int duration) {
-            ViewCompat.setAlpha(mMessageView, 1f);
-            ViewCompat.animate(mMessageView)
-                    .alpha(0f)
-                    .setDuration(duration)
-                    .setStartDelay(delay)
-                    .start();
-
-            if (mActionView.getVisibility() == VISIBLE) {
-                ViewCompat.setAlpha(mActionView, 1f);
-                ViewCompat.animate(mActionView)
-                        .alpha(0f)
-                        .setDuration(duration)
-                        .setStartDelay(delay)
-                        .start();
-            }
-        }
-
-        @Override
-        protected void onLayout(boolean changed, int l, int t, int r, int b) {
-            super.onLayout(changed, l, t, r, b);
-            if (changed && mOnLayoutChangeListener != null) {
-                mOnLayoutChangeListener.onLayoutChange(this, l, t, r, b);
-            }
-        }
-
-        @Override
-        protected void onAttachedToWindow() {
-            super.onAttachedToWindow();
-            if (mOnAttachStateChangeListener != null) {
-                mOnAttachStateChangeListener.onViewAttachedToWindow(this);
-            }
-        }
-
-        @Override
-        protected void onDetachedFromWindow() {
-            super.onDetachedFromWindow();
-            if (mOnAttachStateChangeListener != null) {
-                mOnAttachStateChangeListener.onViewDetachedFromWindow(this);
-            }
-        }
-
-        void setOnLayoutChangeListener(OnLayoutChangeListener onLayoutChangeListener) {
-            mOnLayoutChangeListener = onLayoutChangeListener;
-        }
-
-        void setOnAttachStateChangeListener(OnAttachStateChangeListener listener) {
-            mOnAttachStateChangeListener = listener;
-        }
-
-        private boolean updateViewsWithinLayout(final int orientation,
-                                                final int messagePadTop, final int messagePadBottom) {
-            boolean changed = false;
-            if (orientation != getOrientation()) {
-                setOrientation(orientation);
-                changed = true;
-            }
-            if (mMessageView.getPaddingTop() != messagePadTop
-                    || mMessageView.getPaddingBottom() != messagePadBottom) {
-                updateTopBottomPadding(mMessageView, messagePadTop, messagePadBottom);
-                changed = true;
-            }
-            return changed;
-        }
-
-        private static void updateTopBottomPadding(View view, int topPadding, int bottomPadding) {
-            if (ViewCompat.isPaddingRelative(view)) {
-                ViewCompat.setPaddingRelative(view,
-                        ViewCompat.getPaddingStart(view), topPadding,
-                        ViewCompat.getPaddingEnd(view), bottomPadding);
-            } else {
-                view.setPadding(view.getPaddingLeft(), topPadding,
-                        view.getPaddingRight(), bottomPadding);
-            }
-        }
-    }
-
-    final class Behavior extends SwipeDismissBehavior<SnackbarLayout> {
+    final class Behavior extends SwipeDismissBehavior<TSnackbarLayout> {
         @Override
         public boolean canSwipeDismissView(View child) {
-            return child instanceof SnackbarLayout;
+            return child instanceof TSnackbarLayout;
         }
 
         @Override
-        public boolean onInterceptTouchEvent(CoordinatorLayout parent, SnackbarLayout child,
+        public boolean onInterceptTouchEvent(CoordinatorLayout parent, TSnackbarLayout child,
                                              MotionEvent event) {
-            
-            
+
+
             if (parent.isPointInChildBounds(child, (int) event.getX(), (int) event.getY())) {
                 switch (event.getActionMasked()) {
                     case MotionEvent.ACTION_DOWN:
