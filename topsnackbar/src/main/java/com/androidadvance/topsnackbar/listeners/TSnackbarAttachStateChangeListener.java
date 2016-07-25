@@ -9,9 +9,9 @@ import com.androidadvance.topsnackbar.interfaces.IOnAttachStateChangeListener;
 /**
  * Created by Claudiu Codoban on 7/25/2016.
  */
-public class TSnackbarAttachStateChangeTSnackbarListener extends BaseTSnackbarListener implements IOnAttachStateChangeListener {
+public class TSnackbarAttachStateChangeListener extends BaseTSnackbarListener implements IOnAttachStateChangeListener {
 
-    public TSnackbarAttachStateChangeTSnackbarListener(TSnackbar tSnackbar) {
+    public TSnackbarAttachStateChangeListener(TSnackbar tSnackbar) {
         super(tSnackbar);
     }
 

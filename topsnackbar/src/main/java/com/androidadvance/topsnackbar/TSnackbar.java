@@ -37,14 +37,13 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.androidadvance.topsnackbar.adapters.TSnackbarViewOutPropertyAnimatorListenerAdapter;
-import com.androidadvance.topsnackbar.helpers.TSnackbarManagerCallback;
 import com.androidadvance.topsnackbar.adapters.TSnackbarViewInPropertyAnimatorListenerAdapter;
 import com.androidadvance.topsnackbar.interfaces.ITSnackbarManagerCallback;
 import com.androidadvance.topsnackbar.interfaces.IOnAttachStateChangeListener;
 import com.androidadvance.topsnackbar.interfaces.IOnLayoutChangeListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarCloseAnimationListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarShowAnimationListener;
-import com.androidadvance.topsnackbar.listeners.TSnackbarAttachStateChangeTSnackbarListener;
+import com.androidadvance.topsnackbar.listeners.TSnackbarAttachStateChangeListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarDismissTSnackbarListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarLayoutChangeTSnackbarListener;
 
@@ -82,7 +81,7 @@ public final class TSnackbar {
     public final ITSnackbarManagerCallback ManagerCallback = new TSnackbarManagerCallback(this);
 
     private final SwipeDismissBehavior.OnDismissListener mDismissListener = new TSnackbarDismissTSnackbarListener(this);
-    private final IOnAttachStateChangeListener mAttachStateChangeListener = new TSnackbarAttachStateChangeTSnackbarListener(this);
+    private final IOnAttachStateChangeListener mAttachStateChangeListener = new TSnackbarAttachStateChangeListener(this);
     private final IOnLayoutChangeListener mLayoutChangeListener = new TSnackbarLayoutChangeTSnackbarListener(this);
     private final Animation.AnimationListener mShowAnimationListener = new TSnackbarShowAnimationListener(this);
     private final ViewPropertyAnimatorListenerAdapter mFadeInViewPropertyAnimatorListenerAdapter = new TSnackbarViewInPropertyAnimatorListenerAdapter(this);

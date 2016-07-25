@@ -1,6 +1,5 @@
-package com.androidadvance.topsnackbar.helpers;
+package com.androidadvance.topsnackbar;
 
-import com.androidadvance.topsnackbar.TSnackbar;
 import com.androidadvance.topsnackbar.interfaces.ITSnackbarManagerCallback;
 
 /**
