@@ -26,7 +26,6 @@ import android.support.v4.view.ViewPropertyAnimatorListenerAdapter;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -149,7 +148,6 @@ public final class TSnackbar {
 
         return fallback;
     }
-
 
     @Deprecated
     public TSnackbar addIcon(int resource_id, int size) {
@@ -334,14 +332,14 @@ public final class TSnackbar {
             final ViewGroup.LayoutParams lp = Layout.getLayoutParams();
 
             if (lp instanceof CoordinatorLayout.LayoutParams) {
-                final Behavior behavior = new Behavior();
-                behavior.setStartAlphaSwipeDistance(0.1f);
-                behavior.setEndAlphaSwipeDistance(0.6f);
-                behavior.setSwipeDirection(SwipeDismissBehavior.SWIPE_DIRECTION_START_TO_END);
-                behavior.setListener(mOnDismissListener);
+                final TSnackbarBehavior TSnackbarBehavior = new TSnackbarBehavior(ManagerCallback);
+                TSnackbarBehavior.setStartAlphaSwipeDistance(0.1f);
+                TSnackbarBehavior.setEndAlphaSwipeDistance(0.6f);
+                TSnackbarBehavior.setSwipeDirection(SwipeDismissBehavior.SWIPE_DIRECTION_START_TO_END);
+                TSnackbarBehavior.setListener(mOnDismissListener);
 
                 CoordinatorLayout.LayoutParams layoutParameters = (CoordinatorLayout.LayoutParams) lp;
-                layoutParameters.setBehavior(behavior);
+                layoutParameters.setBehavior(TSnackbarBehavior);
             }
 
             mParent.addView(Layout);
@@ -428,34 +426,5 @@ public final class TSnackbar {
             }
         }
         return false;
-    }
-
-    final class Behavior extends SwipeDismissBehavior<TSnackbarLayout> {
-        @Override
-        public boolean canSwipeDismissView(View child) {
-            return child instanceof TSnackbarLayout;
-        }
-
-        @Override
-        public boolean onInterceptTouchEvent(CoordinatorLayout parent, TSnackbarLayout child,
-                                             MotionEvent event) {
-
-
-            if (parent.isPointInChildBounds(child, (int) event.getX(), (int) event.getY())) {
-                switch (event.getActionMasked()) {
-                    case MotionEvent.ACTION_DOWN:
-                        TSnackbarManager.getInstance()
-                                .cancelTimeout(ManagerCallback);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_CANCEL:
-                        TSnackbarManager.getInstance()
-                                .restoreTimeout(ManagerCallback);
-                        break;
-                }
-            }
-
-            return super.onInterceptTouchEvent(parent, child, event);
-        }
     }
 }
