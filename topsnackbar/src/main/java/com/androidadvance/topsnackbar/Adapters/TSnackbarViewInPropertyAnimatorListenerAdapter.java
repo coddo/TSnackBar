@@ -1,4 +1,4 @@
-package com.androidadvance.topsnackbar.helpers;
+package com.androidadvance.topsnackbar.adapters;
 
 import android.support.v4.view.ViewPropertyAnimatorListenerAdapter;
 import android.view.View;
@@ -9,12 +9,9 @@ import com.androidadvance.topsnackbar.TSnackbarManager;
 /**
  * Created by Claudiu Codoban on 7/25/2016.
  */
-public class TSnackbarViewPropertyAnimatorListenerAdapter extends ViewPropertyAnimatorListenerAdapter {
-
-    private TSnackbar mTSnackbar;
-
-    public TSnackbarViewPropertyAnimatorListenerAdapter(TSnackbar tSnackbar) {
-        mTSnackbar = tSnackbar;
+public class TSnackbarViewInPropertyAnimatorListenerAdapter extends BaseViewPropertyAnimatorListenerAdapter {
+    public TSnackbarViewInPropertyAnimatorListenerAdapter(TSnackbar tSnackbar) {
+        super(tSnackbar);
     }
 
     @Override

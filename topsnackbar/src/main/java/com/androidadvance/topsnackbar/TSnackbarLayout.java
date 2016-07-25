@@ -120,7 +120,7 @@ public class TSnackbarLayout extends LinearLayout {
         }
     }
 
-    void animateChildrenOut(int delay, int duration) {
+    public void animateChildrenOut(int delay, int duration) {
         ViewCompat.setAlpha(mMessageView, 1f);
         ViewCompat.animate(mMessageView)
                 .alpha(0f)

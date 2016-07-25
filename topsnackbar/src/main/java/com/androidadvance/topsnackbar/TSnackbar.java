@@ -35,12 +35,14 @@ import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.androidadvance.topsnackbar.adapters.TSnackbarViewOutPropertyAnimatorListenerAdapter;
 import com.androidadvance.topsnackbar.helpers.TSnackbarManagerCallback;
-import com.androidadvance.topsnackbar.helpers.TSnackbarViewPropertyAnimatorListenerAdapter;
+import com.androidadvance.topsnackbar.adapters.TSnackbarViewInPropertyAnimatorListenerAdapter;
 import com.androidadvance.topsnackbar.interfaces.ITSnackbarManagerCallback;
 import com.androidadvance.topsnackbar.interfaces.IOnAttachStateChangeListener;
 import com.androidadvance.topsnackbar.interfaces.IOnLayoutChangeListener;
-import com.androidadvance.topsnackbar.listeners.TSnackbarAnimationListener;
+import com.androidadvance.topsnackbar.listeners.TSnackbarCloseAnimationListener;
+import com.androidadvance.topsnackbar.listeners.TSnackbarShowAnimationListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarOnAttachStateChangeTSnackbarListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarOnDismissTSnackbarListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarOnLayoutChangeTSnackbarListener;
@@ -79,8 +81,8 @@ public final class TSnackbar {
     private final SwipeDismissBehavior.OnDismissListener mOnDismissListener = new TSnackbarOnDismissTSnackbarListener(this);
     private final IOnAttachStateChangeListener mOnAttachStateChangeListener = new TSnackbarOnAttachStateChangeTSnackbarListener(this);
     private final IOnLayoutChangeListener mOnLayoutChangeListener = new TSnackbarOnLayoutChangeTSnackbarListener(this);
-    private final Animation.AnimationListener mOnAnimationListener = new TSnackbarAnimationListener(this);
-    private final ViewPropertyAnimatorListenerAdapter mFadeInViewPropertyAnimatorListenerAdapter = new TSnackbarViewPropertyAnimatorListenerAdapter(this);
+    private final Animation.AnimationListener mOnShowAnimationListener = new TSnackbarShowAnimationListener(this);
+    private final ViewPropertyAnimatorListenerAdapter mFadeInViewPropertyAnimatorListenerAdapter = new TSnackbarViewInPropertyAnimatorListenerAdapter(this);
 
     static {
         Handler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
@@ -117,8 +119,7 @@ public final class TSnackbar {
 
     @NonNull
     public static TSnackbar make(@NonNull View view, @StringRes int resId, @Duration int duration) {
-        return make(view, view.getResources()
-                .getText(resId), duration);
+        return make(view, view.getResources().getText(resId), duration);
     }
 
     private static ViewGroup findSuitableParent(View view) {
@@ -166,7 +167,6 @@ public final class TSnackbar {
         return this;
     }
 
-
     public TSnackbar setIconLeft(@DrawableRes int drawableRes, float sizeDp) {
         final TextView tv = Layout.getMessageView();
         Drawable drawable = ContextCompat.getDrawable(mContext, drawableRes);
@@ -179,7 +179,6 @@ public final class TSnackbar {
         tv.setCompoundDrawables(drawable, compoundDrawables[1], compoundDrawables[2], compoundDrawables[3]);
         return this;
     }
-
 
     public TSnackbar setIconRight(@DrawableRes int drawableRes, float sizeDp) {
         final TextView tv = Layout.getMessageView();
@@ -283,12 +282,10 @@ public final class TSnackbar {
         return this;
     }
 
-
     @NonNull
     public TSnackbar setText(@StringRes int resId) {
         return setText(mContext.getText(resId));
     }
-
 
     @NonNull
     public TSnackbar setDuration(@Duration int duration) {
@@ -307,8 +304,7 @@ public final class TSnackbar {
     }
 
     public void show() {
-        TSnackbarManager.getInstance()
-                .show(mDuration, ManagerCallback);
+        TSnackbarManager.getInstance().show(mDuration, ManagerCallback);
     }
 
     public void dismiss() {
@@ -326,13 +322,11 @@ public final class TSnackbar {
     }
 
     public boolean isShown() {
-        return TSnackbarManager.getInstance()
-                .isCurrent(ManagerCallback);
+        return TSnackbarManager.getInstance().isCurrent(ManagerCallback);
     }
 
     public boolean isShownOrQueued() {
-        return TSnackbarManager.getInstance()
-                .isCurrentOrNext(ManagerCallback);
+        return TSnackbarManager.getInstance().isCurrentOrNext(ManagerCallback);
     }
 
     final void showView() {
@@ -378,7 +372,7 @@ public final class TSnackbar {
                     R.anim.top_in);
             anim.setInterpolator(com.androidadvance.topsnackbar.AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR);
             anim.setDuration(ANIMATION_DURATION);
-            anim.setAnimationListener(mOnAnimationListener);
+            anim.setAnimationListener(mOnShowAnimationListener);
             Layout.startAnimation(anim);
         }
     }
@@ -389,36 +383,13 @@ public final class TSnackbar {
                     .translationY(-Layout.getHeight())
                     .setInterpolator(com.androidadvance.topsnackbar.AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR)
                     .setDuration(ANIMATION_DURATION)
-                    .setListener(new ViewPropertyAnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationStart(View view) {
-                            Layout.animateChildrenOut(0, ANIMATION_FADE_DURATION);
-                        }
-
-                        @Override
-                        public void onAnimationEnd(View view) {
-                            onViewHidden(event);
-                        }
-                    })
+                    .setListener(new TSnackbarViewOutPropertyAnimatorListenerAdapter(this, event))
                     .start();
         } else {
             Animation anim = AnimationUtils.loadAnimation(Layout.getContext(), R.anim.top_out);
             anim.setInterpolator(com.androidadvance.topsnackbar.AnimationUtils.FAST_OUT_SLOW_IN_INTERPOLATOR);
             anim.setDuration(ANIMATION_DURATION);
-            anim.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    onViewHidden(event);
-                }
-
-                @Override
-                public void onAnimationStart(Animation animation) {
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                }
-            });
+            anim.setAnimationListener(new TSnackbarCloseAnimationListener(this, event));
             Layout.startAnimation(anim);
         }
     }
@@ -432,7 +403,6 @@ public final class TSnackbar {
     }
 
     public void onViewHidden(int event) {
-
         TSnackbarManager.getInstance().onDismissed(ManagerCallback);
 
         if (TSnackbarCallback != null) {
