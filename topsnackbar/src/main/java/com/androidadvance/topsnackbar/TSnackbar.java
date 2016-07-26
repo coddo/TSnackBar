@@ -12,7 +12,6 @@ import android.graphics.drawable.VectorDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
@@ -42,6 +41,7 @@ import com.androidadvance.topsnackbar.interfaces.ITSnackbarManagerCallback;
 import com.androidadvance.topsnackbar.interfaces.IOnTSnackbarAttachStateChangeListener;
 import com.androidadvance.topsnackbar.interfaces.IOnTSnackbarLayoutChangeListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarCloseAnimationListener;
+import com.androidadvance.topsnackbar.listeners.TSnackbarOnClickListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarShowAnimationListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarAttachStateChangeListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarDismissListener;
@@ -77,7 +77,7 @@ public final class TSnackbar {
 
     public final TSnackbarLayout Layout;
     public final Handler Handler;
-    public TSnackbarCallback TSnackbarCallback;
+    public TSnackbarCallback Callback;
     public final ITSnackbarManagerCallback ManagerCallback = new TSnackbarManagerCallback(this);
 
     private final SwipeDismissBehavior.OnDismissListener mDismissListener = new TSnackbarDismissListener(this);
@@ -233,14 +233,7 @@ public final class TSnackbar {
         } else {
             tv.setVisibility(View.VISIBLE);
             tv.setText(text);
-            tv.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    listener.onClick(view);
-
-                    dispatchDismiss(TSnackbarCallback.DISMISS_EVENT_ACTION);
-                }
-            });
+            tv.setOnClickListener(new TSnackbarOnClickListener(this, listener));
         }
         return this;
     }
@@ -293,7 +286,7 @@ public final class TSnackbar {
     }
 
     public void dismiss() {
-        dispatchDismiss(TSnackbarCallback.DISMISS_EVENT_MANUAL);
+        dispatchDismiss(Callback.DISMISS_EVENT_MANUAL);
     }
 
     public void dispatchDismiss(@TSnackbarCallback.DismissEvent int event) {
@@ -302,7 +295,7 @@ public final class TSnackbar {
 
     @NonNull
     public TSnackbar setCallback(TSnackbarCallback tSnackbarCallback) {
-        TSnackbarCallback = tSnackbarCallback;
+        Callback = tSnackbarCallback;
         return this;
     }
 
@@ -319,14 +312,14 @@ public final class TSnackbar {
             final ViewGroup.LayoutParams lp = Layout.getLayoutParams();
 
             if (lp instanceof CoordinatorLayout.LayoutParams) {
-                final TSnackbarBehavior TSnackbarBehavior = new TSnackbarBehavior(ManagerCallback);
-                TSnackbarBehavior.setStartAlphaSwipeDistance(0.1f);
-                TSnackbarBehavior.setEndAlphaSwipeDistance(0.6f);
-                TSnackbarBehavior.setSwipeDirection(SwipeDismissBehavior.SWIPE_DIRECTION_START_TO_END);
-                TSnackbarBehavior.setListener(mDismissListener);
+                final TSnackbarBehavior tSnackbarBehavior = new TSnackbarBehavior(ManagerCallback);
+                tSnackbarBehavior.setStartAlphaSwipeDistance(0.1f);
+                tSnackbarBehavior.setEndAlphaSwipeDistance(0.6f);
+                tSnackbarBehavior.setSwipeDirection(SwipeDismissBehavior.SWIPE_DIRECTION_START_TO_END);
+                tSnackbarBehavior.setListener(mDismissListener);
 
                 CoordinatorLayout.LayoutParams layoutParameters = (CoordinatorLayout.LayoutParams) lp;
-                layoutParameters.setBehavior(TSnackbarBehavior);
+                layoutParameters.setBehavior(tSnackbarBehavior);
             }
 
             mParent.addView(Layout);
@@ -390,8 +383,8 @@ public final class TSnackbar {
     public void onViewHidden(int event) {
         TSnackbarManager.getInstance().onDismissed(ManagerCallback);
 
-        if (TSnackbarCallback != null) {
-            TSnackbarCallback.onDismissed(this, event);
+        if (Callback != null) {
+            Callback.onDismissed(this, event);
         }
 
         final ViewParent parent = Layout.getParent();

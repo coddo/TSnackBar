@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Created by coddo on 7/25/16.
  */
-public abstract class TSnackbarCallback {
+public class TSnackbarCallback {
 
     public static final int DISMISS_EVENT_SWIPE = 0;
 

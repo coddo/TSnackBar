@@ -1,6 +1,5 @@
 package com.androidadvance.topsnackbar.adapters;
 
-import android.support.v4.view.ViewPropertyAnimatorListenerAdapter;
 import android.view.View;
 
 import com.androidadvance.topsnackbar.TSnackbar;
@@ -22,8 +21,8 @@ public class TSnackbarViewInPropertyAnimatorListenerAdapter extends BaseViewProp
 
     @Override
     public void onAnimationEnd(View view) {
-        if (mTSnackbar.TSnackbarCallback != null) {
-            mTSnackbar.TSnackbarCallback.onShown(mTSnackbar);
+        if (mTSnackbar.Callback != null) {
+            mTSnackbar.Callback.onShown(mTSnackbar);
         }
 
         TSnackbarManager.getInstance().onShown(mTSnackbar.ManagerCallback);

@@ -15,8 +15,8 @@ public class TSnackbarShowAnimationListener extends BaseTSnackbarListener implem
 
     @Override
     public void onAnimationEnd(Animation animation) {
-        if (mTSnackbar.TSnackbarCallback != null) {
-            mTSnackbar.TSnackbarCallback.onShown(mTSnackbar);
+        if (mTSnackbar.Callback != null) {
+            mTSnackbar.Callback.onShown(mTSnackbar);
         }
         TSnackbarManager.getInstance().onShown(mTSnackbar.ManagerCallback);
     }

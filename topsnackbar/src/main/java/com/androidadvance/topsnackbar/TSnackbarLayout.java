@@ -162,8 +162,8 @@ public class TSnackbarLayout extends LinearLayout {
         }
     }
 
-    public void setOnLayoutChangeListener(IOnTSnackbarLayoutChangeListener IOnTSnackbarLayoutChangeListener) {
-        mIOnTSnackbarLayoutChangeListener = IOnTSnackbarLayoutChangeListener;
+    public void setOnLayoutChangeListener(IOnTSnackbarLayoutChangeListener listener) {
+        mIOnTSnackbarLayoutChangeListener = listener;
     }
 
     public void setOnAttachStateChangeListener(IOnTSnackbarAttachStateChangeListener listener) {
