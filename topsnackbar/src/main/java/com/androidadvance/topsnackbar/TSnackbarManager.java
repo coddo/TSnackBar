@@ -22,8 +22,6 @@ import android.os.Message;
 
 import com.androidadvance.topsnackbar.interfaces.ITSnackbarManagerCallback;
 
-import java.lang.ref.WeakReference;
-
 /**
  * Manages {@link TSnackbar}s.
  */
@@ -46,8 +44,8 @@ public class TSnackbarManager {
     private final Object mLock;
     private final Handler mHandler;
 
-    private SnackbarRecord mCurrentSnackbar;
-    private SnackbarRecord mNextSnackbar;
+    private TSnackbarRecord mCurrentSnackbar;
+    private TSnackbarRecord mNextSnackbar;
 
     private TSnackbarManager() {
         mLock = new Object();
@@ -56,7 +54,7 @@ public class TSnackbarManager {
             public boolean handleMessage(Message message) {
                 switch (message.what) {
                     case MSG_TIMEOUT:
-                        handleTimeout((SnackbarRecord) message.obj);
+                        handleTimeout((TSnackbarRecord) message.obj);
                         return true;
                 }
                 return false;
@@ -67,19 +65,19 @@ public class TSnackbarManager {
     public void show(int duration, ITSnackbarManagerCallback ITSnackbarManagerCallback) {
         synchronized (mLock) {
             if (isCurrentSnackbar(ITSnackbarManagerCallback)) {
-                // Means that the ITSnackbarManagerCallback is already in the queue. We'll just update the duration
-                mCurrentSnackbar.duration = duration;
+                // Means that the ITSnackbarManagerCallback is already in the queue. We'll just update the Duration
+                mCurrentSnackbar.Duration = duration;
                 // If this is the TSnackbar currently being shown, call re-schedule it's
                 // timeout
                 mHandler.removeCallbacksAndMessages(mCurrentSnackbar);
                 scheduleTimeoutLocked(mCurrentSnackbar);
                 return;
             } else if (isNextSnackbar(ITSnackbarManagerCallback)) {
-                // We'll just update the duration
-                mNextSnackbar.duration = duration;
+                // We'll just update the Duration
+                mNextSnackbar.Duration = duration;
             } else {
                 // Else, we need to create a new record and queue it
-                mNextSnackbar = new SnackbarRecord(duration, ITSnackbarManagerCallback);
+                mNextSnackbar = new TSnackbarRecord(duration, ITSnackbarManagerCallback);
             }
 
             if (mCurrentSnackbar != null && cancelSnackbarLocked(mCurrentSnackbar,
@@ -166,7 +164,7 @@ public class TSnackbarManager {
             mCurrentSnackbar = mNextSnackbar;
             mNextSnackbar = null;
 
-            final ITSnackbarManagerCallback ITSnackbarManagerCallback = mCurrentSnackbar.ICallback.get();
+            final ITSnackbarManagerCallback ITSnackbarManagerCallback = mCurrentSnackbar.Callback.get();
             if (ITSnackbarManagerCallback != null) {
                 ITSnackbarManagerCallback.show();
             } else {
@@ -176,8 +174,8 @@ public class TSnackbarManager {
         }
     }
 
-    private boolean cancelSnackbarLocked(SnackbarRecord record, int event) {
-        final ITSnackbarManagerCallback ITSnackbarManagerCallback = record.ICallback.get();
+    private boolean cancelSnackbarLocked(TSnackbarRecord record, int event) {
+        final ITSnackbarManagerCallback ITSnackbarManagerCallback = record.Callback.get();
         if (ITSnackbarManagerCallback != null) {
             ITSnackbarManagerCallback.dismiss(event);
             return true;
@@ -193,41 +191,28 @@ public class TSnackbarManager {
         return mNextSnackbar != null && mNextSnackbar.isSnackbar(ITSnackbarManagerCallback);
     }
 
-    private void scheduleTimeoutLocked(SnackbarRecord r) {
-        if (r.duration == TSnackbar.LENGTH_INDEFINITE) {
+    private void scheduleTimeoutLocked(TSnackbarRecord r) {
+        if (r.Duration == TSnackbar.LENGTH_INDEFINITE) {
             // If we're set to indefinite, we don't want to set a timeout
             return;
         }
 
         int durationMs = LONG_DURATION_MS;
-        if (r.duration > 0) {
-            durationMs = r.duration;
-        } else if (r.duration == TSnackbar.LENGTH_SHORT) {
+        if (r.Duration > 0) {
+            durationMs = r.Duration;
+        } else if (r.Duration == TSnackbar.LENGTH_SHORT) {
             durationMs = SHORT_DURATION_MS;
         }
+
         mHandler.removeCallbacksAndMessages(r);
         mHandler.sendMessageDelayed(Message.obtain(mHandler, MSG_TIMEOUT, r), durationMs);
     }
 
-    private void handleTimeout(SnackbarRecord record) {
+    private void handleTimeout(TSnackbarRecord record) {
         synchronized (mLock) {
             if (mCurrentSnackbar == record || mNextSnackbar == record) {
                 cancelSnackbarLocked(record, TSnackbarCallback.DISMISS_EVENT_TIMEOUT);
             }
-        }
-    }
-
-    private static class SnackbarRecord {
-        private final WeakReference<ITSnackbarManagerCallback> ICallback;
-        private int duration;
-
-        SnackbarRecord(int duration, ITSnackbarManagerCallback ITSnackbarManagerCallback) {
-            this.ICallback = new WeakReference<>(ITSnackbarManagerCallback);
-            this.duration = duration;
-        }
-
-        boolean isSnackbar(ITSnackbarManagerCallback ITSnackbarManagerCallback) {
-            return ITSnackbarManagerCallback != null && this.ICallback.get() == ITSnackbarManagerCallback;
         }
     }
 }
