@@ -39,13 +39,13 @@ import android.widget.TextView;
 import com.androidadvance.topsnackbar.adapters.TSnackbarViewOutPropertyAnimatorListenerAdapter;
 import com.androidadvance.topsnackbar.adapters.TSnackbarViewInPropertyAnimatorListenerAdapter;
 import com.androidadvance.topsnackbar.interfaces.ITSnackbarManagerCallback;
-import com.androidadvance.topsnackbar.interfaces.IOnAttachStateChangeListener;
-import com.androidadvance.topsnackbar.interfaces.IOnLayoutChangeListener;
+import com.androidadvance.topsnackbar.interfaces.IOnTSnackbarAttachStateChangeListener;
+import com.androidadvance.topsnackbar.interfaces.IOnTSnackbarLayoutChangeListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarCloseAnimationListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarShowAnimationListener;
 import com.androidadvance.topsnackbar.listeners.TSnackbarAttachStateChangeListener;
-import com.androidadvance.topsnackbar.listeners.TSnackbarDismissTSnackbarListener;
-import com.androidadvance.topsnackbar.listeners.TSnackbarLayoutChangeTSnackbarListener;
+import com.androidadvance.topsnackbar.listeners.TSnackbarDismissListener;
+import com.androidadvance.topsnackbar.listeners.TSnackbarLayoutChangeListener;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -76,38 +76,22 @@ public final class TSnackbar {
     private int mDuration;
 
     public final TSnackbarLayout Layout;
-    public static final Handler Handler;
+    public final Handler Handler;
     public TSnackbarCallback TSnackbarCallback;
     public final ITSnackbarManagerCallback ManagerCallback = new TSnackbarManagerCallback(this);
 
-    private final SwipeDismissBehavior.OnDismissListener mDismissListener = new TSnackbarDismissTSnackbarListener(this);
-    private final IOnAttachStateChangeListener mAttachStateChangeListener = new TSnackbarAttachStateChangeListener(this);
-    private final IOnLayoutChangeListener mLayoutChangeListener = new TSnackbarLayoutChangeTSnackbarListener(this);
+    private final SwipeDismissBehavior.OnDismissListener mDismissListener = new TSnackbarDismissListener(this);
+    private final IOnTSnackbarAttachStateChangeListener mAttachStateChangeListener = new TSnackbarAttachStateChangeListener(this);
+    private final IOnTSnackbarLayoutChangeListener mLayoutChangeListener = new TSnackbarLayoutChangeListener(this);
     private final Animation.AnimationListener mShowAnimationListener = new TSnackbarShowAnimationListener(this);
     private final ViewPropertyAnimatorListenerAdapter mFadeInViewPropertyAnimatorListenerAdapter = new TSnackbarViewInPropertyAnimatorListenerAdapter(this);
-
-    static {
-        Handler = new Handler(Looper.getMainLooper(), new Handler.Callback() {
-            @Override
-            public boolean handleMessage(Message message) {
-                switch (message.what) {
-                    case MSG_SHOW:
-                        ((TSnackbar) message.obj).showView();
-                        return true;
-                    case MSG_DISMISS:
-                        ((TSnackbar) message.obj).hideView(message.arg1);
-                        return true;
-                }
-                return false;
-            }
-        });
-    }
 
     private TSnackbar(ViewGroup parent) {
         mParent = parent;
         mContext = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(mContext);
         Layout = (TSnackbarLayout) inflater.inflate(R.layout.tsnackbar_layout, mParent, false);
+        Handler = new Handler(Looper.getMainLooper(), new TSnackbarHandler(this));
     }
 
     @NonNull

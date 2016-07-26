@@ -4,12 +4,12 @@ import android.view.View;
 
 import com.androidadvance.topsnackbar.TSnackbar;
 import com.androidadvance.topsnackbar.TSnackbarCallback;
-import com.androidadvance.topsnackbar.interfaces.IOnAttachStateChangeListener;
+import com.androidadvance.topsnackbar.interfaces.IOnTSnackbarAttachStateChangeListener;
 
 /**
  * Created by Claudiu Codoban on 7/25/2016.
  */
-public class TSnackbarAttachStateChangeListener extends BaseTSnackbarListener implements IOnAttachStateChangeListener {
+public class TSnackbarAttachStateChangeListener extends BaseTSnackbarListener implements IOnTSnackbarAttachStateChangeListener {
 
     public TSnackbarAttachStateChangeListener(TSnackbar tSnackbar) {
         super(tSnackbar);

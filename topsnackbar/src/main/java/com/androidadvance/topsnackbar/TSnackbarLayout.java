@@ -10,8 +10,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.androidadvance.topsnackbar.interfaces.IOnAttachStateChangeListener;
-import com.androidadvance.topsnackbar.interfaces.IOnLayoutChangeListener;
+import com.androidadvance.topsnackbar.interfaces.IOnTSnackbarAttachStateChangeListener;
+import com.androidadvance.topsnackbar.interfaces.IOnTSnackbarLayoutChangeListener;
 
 /**
  * Created by coddo on 7/25/16.
@@ -23,8 +23,8 @@ public class TSnackbarLayout extends LinearLayout {
     private int mMaxWidth;
     private int mMaxInlineActionWidth;
 
-    private IOnLayoutChangeListener mIOnLayoutChangeListener;
-    private IOnAttachStateChangeListener mIOnAttachStateChangeListener;
+    private IOnTSnackbarLayoutChangeListener mIOnTSnackbarLayoutChangeListener;
+    private IOnTSnackbarAttachStateChangeListener mIOnTSnackbarAttachStateChangeListener;
 
     public TSnackbarLayout(Context context) {
         this(context, null);
@@ -141,33 +141,33 @@ public class TSnackbarLayout extends LinearLayout {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
-        if (changed && mIOnLayoutChangeListener != null) {
-            mIOnLayoutChangeListener.onLayoutChange(this, l, t, r, b);
+        if (changed && mIOnTSnackbarLayoutChangeListener != null) {
+            mIOnTSnackbarLayoutChangeListener.onLayoutChange(this, l, t, r, b);
         }
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        if (mIOnAttachStateChangeListener != null) {
-            mIOnAttachStateChangeListener.onViewAttachedToWindow(this);
+        if (mIOnTSnackbarAttachStateChangeListener != null) {
+            mIOnTSnackbarAttachStateChangeListener.onViewAttachedToWindow(this);
         }
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (mIOnAttachStateChangeListener != null) {
-            mIOnAttachStateChangeListener.onViewDetachedFromWindow(this);
+        if (mIOnTSnackbarAttachStateChangeListener != null) {
+            mIOnTSnackbarAttachStateChangeListener.onViewDetachedFromWindow(this);
         }
     }
 
-    public void setOnLayoutChangeListener(IOnLayoutChangeListener IOnLayoutChangeListener) {
-        mIOnLayoutChangeListener = IOnLayoutChangeListener;
+    public void setOnLayoutChangeListener(IOnTSnackbarLayoutChangeListener IOnTSnackbarLayoutChangeListener) {
+        mIOnTSnackbarLayoutChangeListener = IOnTSnackbarLayoutChangeListener;
     }
 
-    public void setOnAttachStateChangeListener(IOnAttachStateChangeListener listener) {
-        mIOnAttachStateChangeListener = listener;
+    public void setOnAttachStateChangeListener(IOnTSnackbarAttachStateChangeListener listener) {
+        mIOnTSnackbarAttachStateChangeListener = listener;
     }
 
     private boolean updateViewsWithinLayout(final int orientation,

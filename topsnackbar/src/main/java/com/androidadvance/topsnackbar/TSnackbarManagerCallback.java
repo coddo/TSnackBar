@@ -19,7 +19,7 @@ public class TSnackbarManagerCallback implements ITSnackbarManagerCallback {
     }
 
     @Override
-    public void dismiss(int event) {
-        mTSnackBar.Handler.sendMessage(mTSnackBar.Handler.obtainMessage(TSnackbar.MSG_DISMISS, event, 0, mTSnackBar));
+    public void dismiss(int eventValue) {
+        mTSnackBar.Handler.sendMessage(mTSnackBar.Handler.obtainMessage(TSnackbar.MSG_DISMISS, eventValue, 0, mTSnackBar));
     }
 }

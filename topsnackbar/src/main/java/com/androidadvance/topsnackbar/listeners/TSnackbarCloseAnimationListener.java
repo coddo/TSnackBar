@@ -10,9 +10,9 @@ import com.androidadvance.topsnackbar.TSnackbar;
 public class TSnackbarCloseAnimationListener extends BaseTSnackbarListener implements Animation.AnimationListener {
     private int mEvent;
 
-    public TSnackbarCloseAnimationListener(TSnackbar tSnackbar, int event) {
+    public TSnackbarCloseAnimationListener(TSnackbar tSnackbar, int eventValue) {
         super(tSnackbar);
-        mEvent = event;
+        mEvent = eventValue;
     }
 
     @Override

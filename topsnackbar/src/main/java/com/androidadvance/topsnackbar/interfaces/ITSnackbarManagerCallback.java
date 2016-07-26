@@ -6,5 +6,5 @@ package com.androidadvance.topsnackbar.interfaces;
 public interface ITSnackbarManagerCallback {
     void show();
 
-    void dismiss(int event);
+    void dismiss(int eventValue);
 }
